@@ -28,7 +28,12 @@ features :  -BDD
               -index
 
             -gestion des erreurs
-            
-            -Bootstrap 4 : v6.1.0
-            -Prettier
-            -ESlint
+
+            -extensions:
+              -Bootstrap 4 : v6.1.0
+              -Prettier
+              -ESlint
+
+            -Contact
+            -Mentions Légales
+            -/!\ ACCESSIBILITE /!\
