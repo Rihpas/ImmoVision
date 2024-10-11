@@ -4,6 +4,8 @@ ImmoVision
 
 
 features :  -BDD
+              ->
+
             -Compte
               ->partage de compte
               ->suivi de dossier
@@ -28,3 +30,7 @@ features :  -BDD
               -index
 
             -gestion des erreurs
+            
+            -Bootstrap 4 : v6.1.0
+            -Prettier
+            -ESlint
