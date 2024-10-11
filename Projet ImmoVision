@@ -1,1 +1,30 @@
+ImmoVision
 
+
+
+
+features :  -BDD
+            -Compte
+              ->partage de compte
+              ->suivi de dossier
+              ->annonce déjà visitées
+              ->alertes
+              ->notes sur les biens
+
+            -Annonces
+              ->centralisation
+              ->filtrage/tri des biens
+              ->layout type
+
+            -Scrapping d'annonces
+            -carte interactive
+            -Statistiques
+            -Avis??
+
+            -MVC:
+              -routes
+              -controller
+              -modele
+              -index
+
+            -gestion des erreurs
