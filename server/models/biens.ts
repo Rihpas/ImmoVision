@@ -20,7 +20,6 @@ export function getBienById(id:string): Bien | undefined{
 
 
 
-
 const biens =[
     {
         id: "1",
