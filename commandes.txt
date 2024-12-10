@@ -1,0 +1,6 @@
+http://localhost:4000/
+npm install @apollo/server graphql
+npm i express mongodb body-parser
+npm install express
+
+npm run dev
