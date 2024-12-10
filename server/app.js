@@ -57,6 +57,27 @@ async function getData() {
       console.error(error.message);
     }
   }
+
+  async function supprData( id ) {
+    
+    try {
+        const client = new MongoClient(mongoUrl);
+        await client.connect();
+     
+        // Sélectionne la base de données et la collection 
+        const collection = client.db('personne').collection('personnes');
+     
+        // Rechercher une nouvelle donnée dans la collection
+        await collection.deleteOne({ _id: id });
+     
+        // Fermer la connexion
+        await client.close();
+        
+      
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
 // Données simulées
 
 // Resolvers : Fournissent la logique pour les requêtes et mutations
