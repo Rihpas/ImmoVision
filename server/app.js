@@ -37,6 +37,26 @@ async function getData() {
     }
   }
   
+  async function ajoutData( id, nom, mail , motdepasse ) {
+    
+    try {
+        const client = new MongoClient(mongoUrl);
+        await client.connect();
+     
+        // Sélectionne la base de données et la collection 
+        const collection = client.db('personne').collection('personnes');
+     
+        // Rechercher une nouvelle donnée dans la collection
+        await collection.insertOne({ _id: id ,name:nom ,email: mail , mdp : motdepasse});
+     
+        // Fermer la connexion
+        await client.close();
+        
+      
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
 // Données simulées
 
 // Resolvers : Fournissent la logique pour les requêtes et mutations
@@ -85,4 +105,4 @@ startStandaloneServer(server, {
 
 const { MongoClient } = require('mongodb');
 
- 
+
