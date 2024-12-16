@@ -3,4 +3,8 @@ npm install @apollo/server graphql
 npm i express mongodb body-parser
 npm install express
 
+
+docker pull mongo
+docker run -d -p 27017:27017 --name mon-container-mongodb -v /monchemin:/data/db mongo
+docker exec -it mon-container-mongodb bash  
 npm run dev
