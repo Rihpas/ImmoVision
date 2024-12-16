@@ -10,11 +10,12 @@ const typeDefs = `
  
   type Query {
     clients: [Client]
-    client(_id: ID!): Client
+    
   }
  
   
 `;
+//client(_id: ID!): Client
 async function getData() {
     
     try {
@@ -57,7 +58,26 @@ async function getData() {
       console.error(error.message);
     }
   }
-
+  async function modData( id, nom, mail , motdepasse ) {
+    
+    try {
+        const client = new MongoClient(mongoUrl);
+        await client.connect();
+     
+        // Sélectionne la base de données et la collection 
+        const collection = client.db('personne').collection('personnes');
+     
+        // Rechercher une nouvelle donnée dans la collection
+        await collection.updateOne({ _id: id},{name:nom ,email: mail , mdp : motdepasse});
+     
+        // Fermer la connexion
+        await client.close();
+        
+      
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
   async function supprData( id ) {
     
     try {
@@ -78,13 +98,34 @@ async function getData() {
       console.error(error.message);
     }
   }
+  async function getDataid(id) {
+    
+    try {
+        const client = new MongoClient(mongoUrl);
+        await client.connect();
+     
+        // Sélectionne la base de données et la collection 
+        const collection = client.db('personne').collection('personnes');
+     
+        // Rechercher une nouvelle donnée dans la collection
+        const res = await collection.find({_id:id},{name:true}).toArray();
+     
+        // Fermer la connexion
+        await client.close();
+        console.log(res);
+        return res;
+      
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
 // Données simulées
 
 // Resolvers : Fournissent la logique pour les requêtes et mutations
 const resolvers = {
   Query: {
     clients: () => getData(),
-    client: (_, { _id }) => clients.find(client => client._id === _id),
+    //client: ({id}) => getDataid(id),
   },
   
   };
@@ -125,5 +166,10 @@ startStandaloneServer(server, {
   }
 
 const { MongoClient } = require('mongodb');
+ajoutData(2,"testnom","teste",'testmdp')
+ajoutData(3,"testnom","teste",'testmdp')
+ajoutData(4,"testnom","teste",'testmdp')
+ajoutData(5,"testnom","teste",'testmdp')
 
-
+modData(1,"testnom","teste@mail",'testmdp')
+console.log(getDataid(1));
