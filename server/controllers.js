@@ -6,7 +6,7 @@ const saltRounds = 10;
 
 //~~~~~~~~~~~~~~~~~~~~~~~ Authentification ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 function showLogin(req, res) {
-  res.render("../public/connectionuser.html", { error: null });
+  res.status(200).render("../public/connectionuser.html", { error: null });
 }
 
 async function registerloging(req, res) {
@@ -134,6 +134,7 @@ async function getDataid(id) {
     await client.close();
     return res;
   } catch (error) {
+    console.log("oh j'ai mal");
     console.error(error.message);
   }
 }
