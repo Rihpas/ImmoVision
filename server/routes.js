@@ -9,6 +9,30 @@ const { showLogin, verifLogin,registerloging } = require('../server/controllers.
 router.get('/login', showLogin);
 router.post('/inscription', registerloging);
 router.post('/login', verifLogin);
+router.get('/elements', async (req, res) => {
+  try {
+      const elements = await getData(); // Récupérer tous les éléments depuis la BDD
+      res.json(elements);
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des éléments', error });
+  }
+});
+
+router.get('/elements/:id', async (req, res) => {
+  const elementId = req.params.id;
+
+  try {
+      const element = await getDataid(elementId); // Récupérer un élément par ID
+      if (element) {
+          res.json(element);
+      } else {
+          res.status(404).json({ message: 'Élément non trouvé' });
+      }
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération de l\'élément', error });
+  }
+});
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~Gestion BDD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

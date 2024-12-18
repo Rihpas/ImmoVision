@@ -47,16 +47,13 @@ async function verifLogin(req, res) {
 
     const utilisateur = await collection.findOne({ name: username });
     if (!utilisateur) {
-      return res.render("../public/connectionuser.html", {
-        error: "Nom d'utilisateur incorrect.",
-      });
+      res.status(401).json({ message: "Erreur authentifictation" });
     }
 
     const motDePasseValide = await bcrypt.compare(password, utilisateur.mdp);
     if (!motDePasseValide) {
-      return res.render("../public/connectionuser.html", {
-        error: "Mot de passe incorrect.",
-      });
+      
+      res.status(401).json({ message: "Erreur authentifictation" });
     }
 
     res.render("../public/frontpage.html", { username });
