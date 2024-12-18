@@ -52,7 +52,7 @@ const resolvers = {
 const server = new ApolloServer({ typeDefs, resolvers });
 
 startStandaloneServer(server, {
-    listen: { port: 4000 },
+    listen: { port: 4001 },
   }).then(({ url }) => {
     console.log(`🚀 Serveur prêt à l'adresse : ${url}`);
   });

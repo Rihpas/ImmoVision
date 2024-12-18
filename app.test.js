@@ -1,14 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import express from "express";
+import { app } from './app';
 
-// Importation ou création de l'application Express
-const app = express();
-const port = 3000;
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+const port = 4000;
 
 // Variables de test
 let server;

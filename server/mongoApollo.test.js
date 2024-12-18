@@ -1,19 +1,14 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { MongoClient } from 'mongodb';
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
-import { resolvers } from '../server/app.js'; 
-import { typeDefs } from '../server/app.js'; 
+import { resolvers } from './routes.js'; 
+import { typeDefs } from './routes.js'; 
 
 const mongoUrl = 'mongodb://localhost:27017';
 let client;
 let server;
 
 beforeAll(async () => {
-  // Setup MongoDB client
-  client = new MongoClient(mongoUrl);
-  await client.connect();
-
   // Setup Apollo Server
   server = new ApolloServer({ typeDefs, resolvers });
   await startStandaloneServer(server, {
