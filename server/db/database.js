@@ -9,5 +9,5 @@ async function connectToDB() {
     return { db, client }; // Retourne `db` et `client`
 }
 
-module.exports = connectToDB;
+module.exports = connectToDB, MongoClient;
 

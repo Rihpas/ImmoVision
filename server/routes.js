@@ -26,27 +26,78 @@ const { startStandaloneServer } = require('@apollo/server/standalone');
 
 // Définition du schéma
 const typeDefs = `
-  type Client {
-    _id : ID!
-    name : String!
-  }
- 
-  type Query {
-    clients: [Client]
-    
-  }
+type Client {
+  _id: ID!
+  name: String!
+  email: String!
+}
+
+# Définition des requêtes
+type Query {
+  clients: [Client!]       # Récupérer tous les clients
+  client(id: ID!): Client  # Récupérer un client par ID
+}
+
+# Définition des mutations
+type Mutation {
+  addClient(name: String!, email: String!, password: String!): Client!    # Ajouter un client
+  updateClient(id: ID!, name: String!, email: String!, password: String!): Client! # Modifier un client
+  deleteClient(id: ID!): Boolean!   # Supprimer un client
+}
  
   
 `;
 
 // Resolvers : Fournissent la logique pour les requêtes et mutations
 const resolvers = {
-    Query: {
-      clients: () => getData(),
-      //client: ({id}) => getDataid(id),
+  Query: {
+    // Résolver pour récupérer tous les clients
+    clients: async () => {
+      return await getData();
     },
     
-    };
+    // Résolver pour récupérer un client par ID
+    client: async (_, { id }) => {
+      const clientData = await getDataid(id);
+      return clientData[0]; // retourne le premier élément trouvé
+    },
+  },
+
+  Mutation: {
+    // Résolver pour ajouter un nouveau client
+    addClient: async (_, { name, email, password }) => {
+      // Hachage du mot de passe avant l'ajout
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Appel à la fonction d'ajout dans la BDD
+      await ajoutData(name, email, hashedPassword);
+
+      return {
+        _id: "mocked-id", // Remplace par l'ID généré par MongoDB dans la fonction `ajoutData` si nécessaire
+        name,
+        email,
+      };
+    },
+
+    // Résolver pour mettre à jour un client
+    updateClient: async (_, { id, name, email, password }) => {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await modData(id, name, email, hashedPassword);
+
+      return {
+        _id: id,
+        name,
+        email,
+      };
+    },
+
+    // Résolver pour supprimer un client
+    deleteClient: async (_, { id }) => {
+      await supprData(id);
+      return true; // Retourne true si la suppression est réussie
+    },
+  },
+};
 
 // Création du serveur Apollo
 const server = new ApolloServer({ typeDefs, resolvers });
@@ -80,10 +131,10 @@ startStandaloneServer(server, {
     });
   }
 
-ajoutData(2,"testnom","teste",'testmdp')
-ajoutData(3,"testnom","teste",'testmdp')
-ajoutData(4,"testnom","teste",'testmdp')
-ajoutData(5,"testnom","teste",'testmdp')
+ajoutData("testnom","teste",'testmdp')
+ajoutData("testnom","teste",'testmdp')
+ajoutData("testnom","teste",'testmdp')
+ajoutData("testnom","teste",'testmdp')
 
 modData(1,"testnom","teste@mail",'testmdp')
 console.log(getDataid(1));

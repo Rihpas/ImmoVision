@@ -14,7 +14,7 @@ async function registerloging(req, res) {
 
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
 
     const utilisateur = await collection.findOne({ name: username });
     if (utilisateur) {
@@ -43,7 +43,7 @@ async function verifLogin(req, res) {
 
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
 
     const utilisateur = await collection.findOne({ name: username });
     if (!utilisateur) {
@@ -71,7 +71,7 @@ async function verifLogin(req, res) {
 async function getData() {
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
     const res = await collection.find().toArray();
     await client.close();
     return res;
@@ -83,7 +83,7 @@ async function getData() {
 async function ajoutData(nom, mail, motdepasse) {
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
 
     await collection.insertOne({
       name: nom,
@@ -100,7 +100,7 @@ async function ajoutData(nom, mail, motdepasse) {
 async function modData(id, nom, mail, motdepasse) {
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
 
     await collection.updateOne(
       { _id: new ObjectId(id) },
@@ -116,7 +116,7 @@ async function modData(id, nom, mail, motdepasse) {
 async function supprData(id) {
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
 
     await collection.deleteOne({ _id: new ObjectId(id) });
 
@@ -129,7 +129,7 @@ async function supprData(id) {
 async function getDataid(id) {
   try {
     const { bdd, client } = await connectToDB();
-    const collection = bdd.collection("personnes");
+    const collection = client.db('personne').collection("personnes");
 
     const res = await collection.find({ _id: new ObjectId(id) }).toArray();
     await client.close();
