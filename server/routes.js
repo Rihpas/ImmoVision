@@ -4,10 +4,10 @@ const router = express.Router();
 //~~~~~~~~~~~~~~~~~~~~~~~Ãuthentification~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Importer le contrôleur d'authentification
-const { showLogin, verifLogin } = require('../server/controllers.js');
+const { showLogin, verifLogin,registerloging } = require('../server/controllers.js');
 
 router.get('/login', showLogin);
-
+router.post('/inscription', registerloging);
 router.post('/login', verifLogin);
 
 //~~~~~~~~~~~~~~~~~~~~~~~Gestion BDD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

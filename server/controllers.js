@@ -1,144 +1,152 @@
-const bcrypt = require('bcryptjs');
-const connectToDB = require('./db/database');
+const bcrypt = require("bcrypt");
+const { ObjectId } = require("mongodb");
+const connectToDB = require("./db/database");
 
-//~~~~~~~~~~~~~~~~~~~~~~~Ãuthentification~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const saltRounds = 10;
-const salt = bcrypt.genSaltSync(saltRounds);
- 
-// uniquement pour l'exercice on hash manuellement le mdp à ne pas reproduire !!!
-const hashedPassword = bcrypt.hashSync("password123", salt);
 
-
-const users = [
-    { username: 'testuser', password: hashedPassword } // Password: "password123"
-];
-
+//~~~~~~~~~~~~~~~~~~~~~~~ Authentification ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 function showLogin(req, res) {
-    res.render('../public/connexionuser.ejs', { error: null });
+  res.render("../public/connectionuser.html", { error: null });
 }
 
-async function verifLogin(req,res){
-    const { username, password } = req.body;
-     const user = users.find(u => u.username === username);
-     if (!user) {
-         return res.render('../public/connexionuser.ejs', { error: 'Nom d’utilisateur incorrect.' });
-     }
-     
-     const match = await bcrypt.compare(password, user.password);
-     if (!match) {
-         return res.render('../public/connexionuser.ejs', { error: 'Mot de passe incorrect.' });
-     }
-     
-     // Authentification réussie
-     res.render('../public/frontpage.html', { username });
+async function registerloging(req, res) {
+  const { username, emailuser, password } = req.body;
+
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+
+    const utilisateur = await collection.findOne({ name: username });
+    if (utilisateur) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await collection.insertOne({
+      name: username,
+      email: emailuser,
+      mdp: hashedPassword,
+    });
+
+    res.status(201).json({ message: "User registered successfully" });
+
+    await client.close();
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement :", error.message);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~Gestion BDD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//client(_id: ID!): Client
+async function verifLogin(req, res) {
+  const { username, password } = req.body;
+
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+
+    const utilisateur = await collection.findOne({ name: username });
+    if (!utilisateur) {
+      return res.render("../public/connectionuser.html", {
+        error: "Nom d'utilisateur incorrect.",
+      });
+    }
+
+    const motDePasseValide = await bcrypt.compare(password, utilisateur.mdp);
+    if (!motDePasseValide) {
+      return res.render("../public/connectionuser.html", {
+        error: "Mot de passe incorrect.",
+      });
+    }
+
+    res.render("../public/frontpage.html", { username });
+    await client.close();
+  } catch (error) {
+    console.error("Erreur lors de la vérification :", error.message);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~ Gestion BDD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 async function getData() {
-    
-    try {
-        const { bdd, client } = await connectToDB();
-        // Sélectionne la base de données et la collection 
-        const collection = bdd.collection('personnes');
-     
-        // Rechercher une nouvelle donnée dans la collection
-        const res = await collection.find().toArray();
-     
-        // Fermer la connexion
-        await client.close();
-        console.log(res);
-        return res;
-      
-    } catch (error) {
-      console.error(error.message);
-    }
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+    const res = await collection.find().toArray();
+    await client.close();
+    return res;
+  } catch (error) {
+    console.error(error.message);
   }
-  
-  async function ajoutData( id, nom, mail , motdepasse ) {
-    
-    try {
-        const { bdd, client } = await connectToDB();
-        // Sélectionne la base de données et la collection 
-        const collection = bdd.collection('personnes')
-     
-        // Rechercher une nouvelle donnée dans la collection
-        await collection.insertOne({ _id: id ,name:nom ,email: mail , mdp : motdepasse});
-     
-        // Fermer la connexion
-        await client.close();
-        
-      
-    } catch (error) {
-      console.error(error.message);
-    }
+}
+
+async function ajoutData(nom, mail, motdepasse) {
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+
+    await collection.insertOne({
+      name: nom,
+      email: mail,
+      mdp: motdepasse,
+    });
+
+    await client.close();
+  } catch (error) {
+    console.error(error.message);
   }
-  async function modData( id, nom, mail , motdepasse ) {
-    
-    try {
-        const { bdd, client } = await connectToDB();
-        // Sélectionne la base de données et la collection 
-        const collection = bdd.collection('personnes')
-     
-        // Rechercher une nouvelle donnée dans la collection
-        await collection.updateOne({ _id: id},{name:nom ,email: mail , mdp : motdepasse});
-     
-        // Fermer la connexion
-        await client.close();
-        
-      
-    } catch (error) {
-      console.error(error.message);
-    }
+}
+
+async function modData(id, nom, mail, motdepasse) {
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { name: nom, email: mail, mdp: motdepasse } }
+    );
+
+    await client.close();
+  } catch (error) {
+    console.error(error.message);
   }
-  async function supprData( id ) {
-    
-    try {
-        const { bdd, client } = await connectToDB();
-        // Sélectionne la base de données et la collection 
-        const collection = bdd.collection('personnes')
-     
-        // Rechercher une nouvelle donnée dans la collection
-        await collection.deleteOne({ _id: id });
-     
-        // Fermer la connexion
-        await client.close();
-        
-      
-    } catch (error) {
-      console.error(error.message);
-    }
+}
+
+async function supprData(id) {
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+
+    await collection.deleteOne({ _id: new ObjectId(id) });
+
+    await client.close();
+  } catch (error) {
+    console.error(error.message);
   }
-  async function getDataid(id) {
-    
-    try {
-        const { bdd, client } = await connectToDB();
-        // Sélectionne la base de données et la collection 
-        const collection = bdd.collection('personnes')
-     
-        // Rechercher une nouvelle donnée dans la collection
-        const res = await collection.find({_id:id},{name:true}).toArray();
-     
-        // Fermer la connexion
-        await client.close();
-        console.log(res);
-        return res;
-      
-    } catch (error) {
-      console.error(error.message);
-    }
+}
+
+async function getDataid(id) {
+  try {
+    const { bdd, client } = await connectToDB();
+    const collection = bdd.collection("personnes");
+
+    const res = await collection.find({ _id: new ObjectId(id) }).toArray();
+    await client.close();
+    return res;
+  } catch (error) {
+    console.error(error.message);
   }
+}
 
+module.exports = {
+  showLogin,
+  registerloging,
+  verifLogin,
+  getData,
+  ajoutData,
+  modData,
+  supprData,
+  getDataid,
+};
 
-
-
-
-
-module.exports = { showLogin, 
-    verifLogin,
-    getData,
-    ajoutData,
-    modData,
-    supprData,
-    getDataid,
- };
