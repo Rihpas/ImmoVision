@@ -9,6 +9,19 @@ const { showLogin, verifLogin,registerloging } = require('../server/controllers.
 router.get('/login', showLogin);
 router.post('/inscription', registerloging);
 router.post('/login', verifLogin);
+router.get('/element', getData);
+router.get('/elements/:id', (req, res) => {
+  const elementId = parseInt(req.params.id);
+
+  // Trouver l'élément correspondant
+  const element = elements.find(e => e.id === elementId);
+
+  if (element) {
+      res.json(element); // Si l'élément est trouvé, on le renvoie
+  } else {
+      res.status(404).json({ message: 'Élément non trouvé' }); // Sinon, on renvoie une erreur 404
+  }
+});
 
 //~~~~~~~~~~~~~~~~~~~~~~~Gestion BDD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
