@@ -118,6 +118,7 @@ async function supprData(id) {
     const { bdd, client } = await connectToDB();
     const collection = client.db('personne').collection("personnes");
 
+    // Assure-toi que l'ID est converti en ObjectId
     await collection.deleteOne({ _id: new ObjectId(id) });
 
     await client.close();
@@ -125,6 +126,7 @@ async function supprData(id) {
     console.error(error.message);
   }
 }
+
 
 async function getDataid(id) {
   try {

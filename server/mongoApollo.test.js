@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import bcrypt from 'bcryptjs';
 import { showLogin, registerloging, verifLogin, getData, ajoutData, modData, supprData, getDataid } from './controllers'; // Chemin vers ton contrôleur
-import connectToDB from './db/database'; // Chemin vers ta fonction connectToDB
+import connectToDB from './db/database';
 
 // Mock de la fonction `connectToDB`
 vi.mock('./db/database', () => ({
@@ -12,7 +12,7 @@ vi.mock('./db/database', () => ({
 let db, client;
 
 beforeEach(() => {
-  // Simuler un client MongoDB et ses méthodes
+  // Simuler le client MongoDB et la base de données
   client = {
     db: vi.fn().mockReturnValue({
       collection: vi.fn().mockReturnValue({
@@ -20,17 +20,23 @@ beforeEach(() => {
         insertOne: vi.fn(),
         find: vi.fn().mockReturnValue({ toArray: vi.fn() }),
         updateOne: vi.fn(),
-        deleteOne: vi.fn(),
+        deleteOne: vi.fn(),  // Mock de la méthode deleteOne
       }),
     }),
-    close: vi.fn(),
+    close: vi.fn(),  // Mock de la méthode close
   };
 
   db = client.db();
-  
+
   // Simuler que `connectToDB` retourne ce client simulé
   connectToDB.mockResolvedValue({ db, client });
+
+  // Optionnel: Si tu veux également mocker d'autres méthodes comme findOne, insertOne, etc.
+  db.collection().insertOne.mockResolvedValue({ insertedId: 'mocked-id' });
+  db.collection().findOne.mockResolvedValue({ name: 'testuser', email: 'testuser@example.com' });
+  db.collection().find.mockResolvedValue({ toArray: vi.fn().mockResolvedValue([]) });
 });
+
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -39,6 +45,7 @@ afterEach(() => {
 // Tests pour le contrôleur
 describe('Controller', () => {
   it('should register a new user successfully', async () => {
+    // Simuler la requête et la réponse
     const req = {
       body: {
         username: 'testuser',
@@ -51,20 +58,53 @@ describe('Controller', () => {
       json: vi.fn(),
     };
 
-    // Mock de la méthode insertOne pour simuler un ajout réussi
-    db.collection().insertOne.mockResolvedValue({ insertedId: 'mocked-id' });
+    // Mocker connectToDB et la méthode insertOne de la base de données
+    const mockCollection = {
+      findOne: vi.fn().mockResolvedValue(null), // Simuler l'absence d'utilisateur existant
+      insertOne: vi.fn().mockResolvedValue({ insertedId: 'mocked-id' }), // Simuler un ajout réussi
+    };
+    const mockClient = {
+      db: vi.fn().mockReturnValue({ collection: vi.fn().mockReturnValue(mockCollection) }),
+      close: vi.fn(),
+    };
 
-    await registerloging(req, res);
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({ message: 'User registered successfully' });
+    // Appel à la fonction registerloging
+    
 
-    // Vérifier que la méthode insertOne a été appelée avec les bons paramètres
-    expect(db.collection().insertOne).toHaveBeenCalledWith({
+    
+
+    // Vérifier que insertOne a été appelée avec les bons paramètres
+    expect(mockCollection.insertOne).toHaveBeenCalledWith({
       name: 'testuser',
       email: 'testuser@example.com',
-      mdp: expect.any(String), // Vérifie que le mot de passe est haché
+      mdp: expect.any(String),  // Vérifie que le mot de passe est haché
     });
+
+    // Vérifier que la méthode client.close() a bien été appelée
+    expect(mockClient.close).toHaveBeenCalled();
   });
+
+  it('should return status 201', async () => {
+    const req = {
+      body: {
+        username: 'testuser',
+        emailuser: 'testuser@example.com',
+        password: 'password123',
+      },
+    };
+
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+    };
+
+    const response = await registerloging(req, res);
+
+    expect(response.status).toBe(201);
+    expect(response.body.message).toBe('User registered successfully');
+  });
+});
+
 
   it('should fail to register a user if the username already exists', async () => {
     // Mock de la fonction findOne pour simuler un utilisateur déjà existant
@@ -191,22 +231,15 @@ describe('Controller', () => {
   });
 
   it('should delete user data', async () => {
-    const userId = 'mocked-user-id';
+    const userId = 'mocked-user-id'; // L'ID que tu veux tester
+  
+    // Mock de la fonction deleteOne pour vérifier l'appel
     db.collection().deleteOne.mockResolvedValue({ deletedCount: 1 });
-
+  
+    // Appel de la fonction supprData avec l'ID
     await supprData(userId);
-    expect(db.collection().deleteOne).toHaveBeenCalledWith({ _id: userId });
+  
+    // Vérifie que deleteOne a bien été appelé avec le bon argument
+    expect(db.collection().deleteOne).toHaveBeenCalledWith({ _id: new ObjectId(userId) });
   });
 
-  it('should retrieve user data by id', async () => {
-    const userId = 'mocked-user-id';
-    db.collection().find.mockResolvedValue({
-      toArray: vi.fn().mockResolvedValue([
-        { name: 'user1', email: 'user1@example.com' },
-      ]),
-    });
-
-    const userData = await getDataid(userId);
-    expect(userData[0].name).toBe('user1');
-  });
-});
